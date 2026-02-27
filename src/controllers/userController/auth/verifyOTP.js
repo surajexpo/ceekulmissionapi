@@ -88,6 +88,28 @@ const verifyOTP = async (req, res) => {
       });
     }
 
+    // Auto-verify teacher: successful phone OTP is sufficient proof of identity.
+    // No admin approval required.
+    if (
+      existingUser.selectedRole === 'Teacher' &&
+      existingUser.verificationStatus === 'Pending'
+    ) {
+      const now = new Date();
+      await existingUser.updateOne({
+        $set: {
+          phoneVerified: true,
+          verificationStatus: 'Verified',
+          verifiedBy: { verifierRole: 'System', verifiedAt: now },
+          'teacherProfile.teacherVerifiedAt': now
+        }
+      });
+      existingUser.verificationStatus = 'Verified';
+      existingUser.phoneVerified = true;
+    } else if (!existingUser.phoneVerified) {
+      await existingUser.updateOne({ $set: { phoneVerified: true } });
+      existingUser.phoneVerified = true;
+    }
+
     // Reset login attempts on successful OTP verification
     await existingUser.resetLoginAttempts();
 

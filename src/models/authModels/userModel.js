@@ -16,12 +16,13 @@ const {
 const verifierSchema = new mongoose.Schema({
   verifierId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Admin'
+    ref: 'Admin',
+    default: null  // null when auto-verified by system
   },
   verifierRole: {
     type: String,
-    enum: ['Manager', 'Director', 'Admin'],
-    default: 'Admin'
+    enum: ['Manager', 'Director', 'Admin', 'System'],
+    default: 'System'
   },
   verifiedAt: {
     type: Date
@@ -152,6 +153,14 @@ const userSchema = new mongoose.Schema(
       enum: VERIFICATION_STATUSES,
       default: 'Pending'
     },
+    phoneVerified: {
+      type: Boolean,
+      default: false
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false
+    },
     verifiedBy: verifierSchema,
 
     // ==================== SYSTEM CONTROLS ====================
@@ -251,8 +260,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // ==================== INDEXES ====================
-userSchema.index({ phone: 1 });
-userSchema.index({ email: 1 });
+// phone and email are already indexed via unique:true+sparse:true on the field definition
 userSchema.index({ 'address.pincode': 1 });
 userSchema.index({ 'address.district': 1 });
 userSchema.index({ verificationStatus: 1 });

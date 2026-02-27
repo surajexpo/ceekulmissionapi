@@ -1,5 +1,5 @@
 const userRoute = require("express").Router();
-const { updateUserProfile, updateProfile, sendOTP, verifyOTP, signup, login, getUserById, getAllUsers, changePassword, applyTeacher } = require("../controllers/userController");
+const { updateUserProfile, updateProfile, sendOTP, verifyOTP, signup, login, getUserById, getAllUsers, changePassword, applyTeacher, sendEmailOTP, verifyEmailOTP } = require("../controllers/userController");
 const { authenticateUser, fileUploader } = require("../middlewares");
 const validateRequest = require("../middlewares/validateRequest");
 const { signupSchema } = require("../validators");
@@ -25,6 +25,21 @@ userRoute.post("/updateprofile", authenticateUser, fileUploader(
 
 // Teacher application
 userRoute.post("/apply-teacher", authenticateUser, applyTeacher);
+
+// ==================== EMAIL VERIFICATION ====================
+/**
+ * @route   POST /users/send-email-otp
+ * @desc    Send OTP to the authenticated user's registered email address
+ * @access  Authenticated user
+ */
+userRoute.post("/send-email-otp", authenticateUser, sendEmailOTP);
+
+/**
+ * @route   POST /users/verify-email-otp
+ * @desc    Verify email OTP. Auto-verifies Teacher accounts on success.
+ * @access  Authenticated user
+ */
+userRoute.post("/verify-email-otp", authenticateUser, verifyEmailOTP);
 
 // Dynamic routes with :userId parameter
 userRoute.get("/:userId", authenticateUser, getUserById);

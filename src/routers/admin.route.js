@@ -86,6 +86,7 @@ adminRoute.post("/courses/:id/feature", authenticateAdmin, toggleFeature);
 const {
   changeUserRole,
   verifyTeacher,
+  manageTeacher,
   listUsers,
 } = require('../controllers/adminController/userManagement');
 
@@ -105,9 +106,16 @@ adminRoute.put("/users/:userId/role", authenticateAdmin, changeUserRole);
 
 /**
  * @route   PUT /admin/users/:userId/verify
- * @desc    Verify or reject a teacher account
+ * @desc    Legacy endpoint — kept for backward compatibility
  * @access  Admin
  */
 adminRoute.put("/users/:userId/verify", authenticateAdmin, verifyTeacher);
+
+/**
+ * @route   PUT /admin/users/:userId/manage
+ * @desc    Admin oversight: suspend | activate | revoke | force_verify a teacher
+ * @access  Admin
+ */
+adminRoute.put("/users/:userId/manage", authenticateAdmin, manageTeacher);
 
 module.exports = adminRoute;

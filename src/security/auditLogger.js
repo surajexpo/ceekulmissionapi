@@ -142,11 +142,10 @@ const auditLogSchema = new mongoose.Schema({
     }
   },
 
-  // Timestamps
+  // Timestamps — indexed via TTL index below (auditLogSchema.index)
   timestamp: {
     type: Date,
-    default: Date.now,
-    index: true
+    default: Date.now
   }
 }, {
   timestamps: true,

@@ -48,6 +48,17 @@ class UserService {
       userData.password = validatedData.password;
     }
 
+    // Auto-verify teachers who registered via MOBILE_OTP.
+    // The phone was already verified by OTP before signup was called,
+    // so no admin approval is required.
+    if (userData.selectedRole === 'Teacher' && authProvider === 'MOBILE_OTP') {
+      const now = new Date();
+      userData.phoneVerified = true;
+      userData.verificationStatus = 'Verified';
+      userData.verifiedBy = { verifierRole: 'System', verifiedAt: now };
+      userData.teacherProfile = { teacherVerifiedAt: now };
+    }
+
     const user = new User(userData);
     await user.save();
     return user;

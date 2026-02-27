@@ -6,6 +6,7 @@ const adminRoute = require('./admin.route.js');
 const router = require('./auth.route.js');
 const teacherRoute = require('./teacher.route.js');
 const courseRoute = require('./course.route.js');
+const workshopRoute = require('./workshop.route.js');
 
 const appRoutes = (app) => {
   app.get('/api/ping', (_, res) =>
@@ -24,6 +25,9 @@ const appRoutes = (app) => {
 
   // Public course routes
   app.use('/api/courses', courseRoute);
+
+  // Workshop routes
+  app.use('/api/v1/workshops', workshopRoute);
 
   // Auth routes (Google OAuth, etc.)
   app.use('/api', router);
