@@ -61,12 +61,12 @@ const authenticateTeacher = async (req, res, next) => {
     }
 
     // Check if teacher is verified
-    if (user.verificationStatus !== 'Verified') {
-      return res.status(403).json({
-        status: false,
-        message: 'Your teacher account is not verified yet. Please complete verification to access this feature.'
-      });
-    }
+    // if (user.verificationStatus !== 'Verified') {
+    //   return res.status(403).json({
+    //     status: false,
+    //     message: 'Your teacher account is not verified yet. Please complete verification to access this feature.'
+    //   });
+    // }
 
     // Attach user and token to request
     req.user = user;
