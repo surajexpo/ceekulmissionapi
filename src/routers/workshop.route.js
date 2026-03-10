@@ -6,20 +6,21 @@ const {
   updateWorkshop,
   cancelWorkshop,
   addSession,
-  deleteSession
+  deleteSession,
+  deleteWorkshop
 } = require('../controllers/workshopController');
-const { authenticateTeacher } = require('../middlewares');
+const { authenticateUser } = require('../middlewares');
 const validateRequest = require('../middlewares/validateRequest');
 const { addSessionsSchema, createWorkshopSchema, updateWorkshopSchema } = require('../validators/workshopValidator');
 
 /**
  * @route   POST /api/v1/workshops
  * @desc    Create a new workshop
- * @access  Teacher (verified)
+ * @access  User
  */
 workshopRoute.post(
   '/',
-  authenticateTeacher,
+  authenticateUser,
   validateRequest(createWorkshopSchema),
   createWorkshop
 );
@@ -27,25 +28,25 @@ workshopRoute.post(
 /**
  * @route   GET /api/v1/workshops/my
  * @desc    Get all workshops created by the logged-in teacher
- * @access  Teacher (verified)
+ * @access  User
  */
-workshopRoute.get('/my', authenticateTeacher, getMyWorkshops);
+workshopRoute.get('/my', authenticateUser, getMyWorkshops);
 
 /**
  * @route   GET /api/v1/workshops/:id
  * @desc    Get a single workshop by ID (owner only)
- * @access  Teacher (verified)
+ * @access  User
  */
-workshopRoute.get('/:id', authenticateTeacher, getWorkshop);
+workshopRoute.get('/:id', authenticateUser, getWorkshop);
 
 /**
  * @route   PUT /api/v1/workshops/:id
  * @desc    Update a workshop (draft status only)
- * @access  Teacher (verified) — owner only
+ * @access  User — owner only
  */
 workshopRoute.put(
   '/:id',
-  authenticateTeacher,
+  authenticateUser,
   validateRequest(updateWorkshopSchema),
   updateWorkshop
 );
@@ -53,9 +54,16 @@ workshopRoute.put(
 /**
  * @route   PATCH /api/v1/workshops/:id/cancel
  * @desc    Cancel a workshop (soft delete)
- * @access  Teacher (verified) — owner only
+ * @access  User — owner only
  */
-workshopRoute.patch('/:id/cancel', authenticateTeacher, cancelWorkshop);
+workshopRoute.patch('/:id/cancel', authenticateUser, cancelWorkshop);
+
+/**
+ * @route   DELETE /api/v1/workshops/:id
+ * @desc    Delete a workshop (hard delete)
+ * @access  User — owner only, draft or cancelled status only
+ */
+workshopRoute.delete('/:id', authenticateUser, deleteWorkshop);
 
 // ==================== SESSION MANAGEMENT ====================
 
@@ -64,11 +72,11 @@ workshopRoute.patch('/:id/cancel', authenticateTeacher, cancelWorkshop);
  * @desc    Add one or more sessions to a draft workshop in a single request.
  *          Body: { "sessions": [ {...}, {...} ] }
  *          Validates per-session rules + cross-session + existing overlap.
- * @access  Teacher (verified) — owner only, draft only
+ * @access  User — owner only, draft only
  */
 workshopRoute.post(
   '/:id/sessions',
-  authenticateTeacher,
+  authenticateUser,
   validateRequest(addSessionsSchema),
   addSession
 );
@@ -77,11 +85,11 @@ workshopRoute.post(
  * @route   DELETE /api/v1/workshops/:id/sessions/:sessionId
  * @desc    Remove a session from a draft workshop by its subdocument _id.
  *          At least one session must remain.
- * @access  Teacher (verified) — owner only, draft only
+ * @access  User — owner only, draft only
  */
 workshopRoute.delete(
   '/:id/sessions/:sessionId',
-  authenticateTeacher,
+  authenticateUser,
   deleteSession
 );
 

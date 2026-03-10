@@ -33,13 +33,13 @@ const verifierSchema = new mongoose.Schema({
 const addressSchema = new mongoose.Schema({
   village: {
     type: String,
-    
+
     trim: true,
     maxlength: [200, 'Village cannot exceed 200 characters']
   },
   pincode: {
     type: String,
-   
+
     trim: true,
     validate: {
       validator: function (value) {
@@ -50,7 +50,7 @@ const addressSchema = new mongoose.Schema({
   },
   district: {
     type: String,
-   
+
     trim: true,
     maxlength: [100, 'District cannot exceed 100 characters']
   }
@@ -103,12 +103,12 @@ const userSchema = new mongoose.Schema(
     },
     dateOfBirth: {
       type: Date,
-     
+
     },
     gender: {
       type: String,
       enum: GENDERS,
-      
+
     },
     profileImage: {
       type: String,
@@ -118,14 +118,14 @@ const userSchema = new mongoose.Schema(
     // ==================== ADDRESS ====================
     address: {
       type: addressSchema,
-     
+
     },
 
     // ==================== ROLE & CLASSIFICATION ====================
     selectedRole: {
       type: String,
       enum: SELECTED_ROLES,
-    
+
       default: 'Student'
     },
     partnerType: {
@@ -344,9 +344,8 @@ userSchema.statics.findVerifiedTeachers = function () {
 userSchema.statics.isEligibleTeacher = async function (userId) {
   const user = await this.findById(userId);
   if (!user) return false;
-  return user.selectedRole === 'Teacher' &&
-         user.verificationStatus === 'Verified' &&
-         user.status === 'Active';
+  return (user.selectedRole === 'Teacher' || user.selectedRole === 'Student') &&
+    user.status === 'Active';
 };
 
 // ==================== WALLET METHODS ====================

@@ -52,11 +52,11 @@ const authenticateTeacher = async (req, res, next) => {
       });
     }
 
-    // Check if user is a teacher
-    if (user.selectedRole !== 'Teacher') {
+    // Check if user is a teacher or student
+    if (user.selectedRole !== 'Teacher' && user.selectedRole !== 'Student') {
       return res.status(403).json({
         status: false,
-        message: 'Access denied. Teacher role required.'
+        message: 'Access denied. Teacher or Student role required.'
       });
     }
 
