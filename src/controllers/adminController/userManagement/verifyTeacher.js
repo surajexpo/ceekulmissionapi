@@ -29,12 +29,7 @@ const verifyTeacher = async (req, res) => {
       return res.status(404).json({ status: false, message: "User not found" });
     }
 
-    if (user.selectedRole !== "Teacher") {
-      return res.status(400).json({
-        status: false,
-        message: "User is not a teacher",
-      });
-    }
+    // Role check removed as per SELECTED_ROLES removal
 
     if (user.verificationStatus !== "Pending") {
       return res.status(400).json({
@@ -73,7 +68,6 @@ const verifyTeacher = async (req, res) => {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
-        selectedRole: updatedUser.selectedRole,
         verificationStatus: updatedUser.verificationStatus,
         verifiedBy: updatedUser.verifiedBy,
         teacherVerifiedAt: updatedUser.teacherProfile?.teacherVerifiedAt,

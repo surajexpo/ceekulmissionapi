@@ -5,7 +5,6 @@ const listUsers = async (req, res) => {
     const {
       page = 1,
       limit = 20,
-      role,
       verificationStatus,
       status,
       search,
@@ -14,7 +13,6 @@ const listUsers = async (req, res) => {
     } = req.query;
 
     const filter = {};
-    if (role) filter.selectedRole = role;
     if (verificationStatus) filter.verificationStatus = verificationStatus;
     if (status) filter.status = status;
     if (search) {
@@ -35,7 +33,7 @@ const listUsers = async (req, res) => {
     const [users, totalUsers] = await Promise.all([
       User.find(filter)
         .select(
-          "name email phone selectedRole verificationStatus status profileImage createdAt teacherProfile.bio teacherProfile.qualification"
+          "name email phone verificationStatus status profileImage createdAt teacherProfile.bio teacherProfile.qualification"
         )
         .skip(skip)
         .limit(limitNum)

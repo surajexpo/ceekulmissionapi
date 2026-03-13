@@ -114,7 +114,8 @@ const getCorsConfig = () => {
       'X-Requested-With',
       'X-Request-ID',
       'Accept',
-      'Origin'
+      'Origin',
+      'X-Skip-Error-Toast'
     ],
     exposedHeaders: [
       'X-RateLimit-Limit',

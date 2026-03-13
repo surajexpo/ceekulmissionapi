@@ -1,5 +1,6 @@
 const workshopRoute = require('express').Router();
 const {
+  getAllWorkshops,
   createWorkshop,
   getMyWorkshops,
   getWorkshop,
@@ -12,6 +13,14 @@ const {
 const { authenticateUser } = require('../middlewares');
 const validateRequest = require('../middlewares/validateRequest');
 const { addSessionsSchema, createWorkshopSchema, updateWorkshopSchema } = require('../validators/workshopValidator');
+
+
+/**
+ * @route   GET /api/v1/workshops
+ * @desc    Get all public workshops (published or active)
+ * @access  Public
+ */
+workshopRoute.get('/', getAllWorkshops);
 
 /**
  * @route   POST /api/v1/workshops

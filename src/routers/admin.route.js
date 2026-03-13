@@ -2,6 +2,8 @@ const adminRoute = require("express").Router();
 const { authenticateAdmin } = require("../middlewares");
 const { login, profile, update, register, forgetPassword, verifyOTP, resetPassword }
 = require('../controllers/adminController');
+const { validateRequest } = require("../middlewares");
+const { adminRegisterSchema } = require("../validators");
 const {
   getPendingCourses,
   getCourseForReview,
@@ -14,7 +16,7 @@ const {
 } = require('../controllers/courseController');
 
 // ==================== ADMIN AUTH ====================
-adminRoute.post("/register", register);
+adminRoute.post("/register", validateRequest(adminRegisterSchema), register);
 adminRoute.post("/login", login);
 adminRoute.get("/profile", authenticateAdmin, profile);
 adminRoute.put("/update", authenticateAdmin, update);
@@ -84,7 +86,6 @@ adminRoute.post("/courses/:id/feature", authenticateAdmin, toggleFeature);
 
 // ==================== USER MANAGEMENT ====================
 const {
-  changeUserRole,
   verifyTeacher,
   manageTeacher,
   listUsers,
@@ -96,20 +97,6 @@ const {
  * @access  Admin
  */
 adminRoute.get("/users", authenticateAdmin, listUsers);
-
-/**
- * @route   PUT /admin/users/:userId/role
- * @desc    Change a user's role
- * @access  Admin
- */
-adminRoute.put("/users/:userId/role", authenticateAdmin, changeUserRole);
-
-/**
- * @route   PUT /admin/users/:userId/verify
- * @desc    Legacy endpoint — kept for backward compatibility
- * @access  Admin
- */
-adminRoute.put("/users/:userId/verify", authenticateAdmin, verifyTeacher);
 
 /**
  * @route   PUT /admin/users/:userId/manage

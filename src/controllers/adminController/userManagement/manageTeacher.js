@@ -49,9 +49,7 @@ const manageTeacher = async (req, res) => {
       return res.status(404).json({ status: false, message: 'User not found' });
     }
 
-    if (user.selectedRole !== 'Teacher') {
-      return res.status(400).json({ status: false, message: 'User is not a Teacher' });
-    }
+    // Role check removed as per SELECTED_ROLES removal
 
     const now = new Date();
     let updateFields = {};
@@ -117,7 +115,6 @@ const manageTeacher = async (req, res) => {
         name: updated.name,
         email: updated.email,
         phone: updated.phone,
-        selectedRole: updated.selectedRole,
         verificationStatus: updated.verificationStatus,
         status: updated.status,
         phoneVerified: updated.phoneVerified,

@@ -68,7 +68,6 @@ const getAllUsers = async (req, res) => {
       gender: user.gender,
       profileImage: user.profileImage,
       address: user.address,
-      selectedRole: user.selectedRole,
       verificationStatus: user.verificationStatus,
       status: user.status,
       authProvider: user.authProvider,

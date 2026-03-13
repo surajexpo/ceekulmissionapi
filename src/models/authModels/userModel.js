@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const {
-  SELECTED_ROLES,
   PARTNER_TYPES,
   GENDERS,
   ACTIVITY_TYPES,
@@ -122,12 +121,6 @@ const userSchema = new mongoose.Schema(
     },
 
     // ==================== ROLE & CLASSIFICATION ====================
-    selectedRole: {
-      type: String,
-      enum: SELECTED_ROLES,
-
-      default: 'Student'
-    },
     partnerType: {
       type: String,
       enum: PARTNER_TYPES
@@ -265,8 +258,6 @@ userSchema.index({ 'address.pincode': 1 });
 userSchema.index({ 'address.district': 1 });
 userSchema.index({ verificationStatus: 1 });
 userSchema.index({ status: 1 });
-userSchema.index({ selectedRole: 1 });
-userSchema.index({ selectedRole: 1, verificationStatus: 1, status: 1 });
 
 // ==================== VALIDATION ====================
 userSchema.pre('validate', function () {
@@ -278,9 +269,7 @@ userSchema.pre('validate', function () {
     this.invalidate('password', 'Password is required for email authentication');
   }
 
-  if (this.selectedRole === 'Partner' && !this.partnerType) {
-    this.invalidate('partnerType', 'Partner type is required when role is Partner');
-  }
+// No role-based validation needed for now
 });
 
 // ==================== PASSWORD HASHING ====================
@@ -335,7 +324,6 @@ userSchema.statics.findByEmail = function (email) {
 
 userSchema.statics.findVerifiedTeachers = function () {
   return this.find({
-    selectedRole: 'Teacher',
     verificationStatus: 'Verified',
     status: 'Active'
   });
@@ -344,8 +332,7 @@ userSchema.statics.findVerifiedTeachers = function () {
 userSchema.statics.isEligibleTeacher = async function (userId) {
   const user = await this.findById(userId);
   if (!user) return false;
-  return (user.selectedRole === 'Teacher' || user.selectedRole === 'Student') &&
-    user.status === 'Active';
+  return user.status === 'Active';
 };
 
 // ==================== WALLET METHODS ====================

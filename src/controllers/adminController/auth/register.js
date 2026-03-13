@@ -1,46 +1,48 @@
 const { Admin } = require("../../../models/authModels");
+const { ApiError } = require("../../../errorHandler");
 
-const register = async (req, res) => {
+/**
+ * @desc    Register a new admin
+ * @route   POST /api/admin/register
+ * @access  Public (or Superadmin depending on policy)
+ */
+const register = async (req, res, next) => {
     try {
-        const mustData = {
-            name: req.body.name,
-            email: req.body.email,
-            password: req.body.password,
-            number: req.body.number,
-            role: req.body.role || 'admin',
-        }
+        const { name, email, password, number, role } = req.validatedBody;
 
-        for (const key in mustData) {
-            if (!mustData[key] || mustData[key] === "") {
-                return res.status(400).json({
-                    status: false,
-                    message: `${key} is required`,
-                });
-            }
-        }
+        // Check if admin with email or number already exists
+        const existingAdmin = await Admin.findOne({ 
+            $or: [{ email }, { number }] 
+        });
 
-        // Check if admin with email already exists
-        const existingAdmin = await Admin.findOne({ email: mustData.email });
         if (existingAdmin) {
-            return res.status(400).json({
-                status: false,
-                message: "Admin with this email already exists",
-            });
+            const field = existingAdmin.email === email ? 'Email' : 'Phone number';
+            throw new ApiError(`${field} is already registered`, 409);
         }
 
-        // Password will be hashed by pre-save hook in AdminModel
-        const newAdmin = new Admin(mustData);
+        // Create new admin
+        const newAdmin = new Admin({
+            name,
+            email,
+            password,
+            number,
+            role
+        });
+
         await newAdmin.save();
 
         return res.status(201).json({
             status: true,
             message: "Admin registered successfully",
+            data: {
+                id: newAdmin._id,
+                name: newAdmin.name,
+                email: newAdmin.email,
+                role: newAdmin.role
+            }
         });
     } catch (error) {
-        return res.status(500).json({
-            status: false,
-            message: error.message,
-        });
+        next(error);
     }
 }
 

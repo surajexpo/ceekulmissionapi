@@ -83,7 +83,6 @@ const updateProfile = async (req, res) => {
       gender: updatedUser.gender,
       profileImage: updatedUser.profileImage,
       address: updatedUser.address,
-      selectedRole: updatedUser.selectedRole,
       activityType: updatedUser.activityType,
       modeOptions: updatedUser.modeOptions,
       expertTypes: updatedUser.expertTypes,

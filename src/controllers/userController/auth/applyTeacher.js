@@ -18,8 +18,8 @@ const applyTeacher = async (req, res) => {
       return res.status(400).json({ status: false, message: "experience is required and must be a non-negative number" });
     }
 
-    // Check if user already has Teacher role
-    if (req.user.selectedRole === "Teacher") {
+    // Role check removed as per SELECTED_ROLES removal
+    if (req.user.teacherProfile?.teacherVerifiedAt) {
       return res.status(400).json({
         status: false,
         message: "You have already applied as a teacher",
@@ -30,7 +30,6 @@ const applyTeacher = async (req, res) => {
       req.user._id,
       {
         $set: {
-          selectedRole: "Teacher",
           verificationStatus: "Verified",
           "teacherProfile.bio": bio,
           "teacherProfile.qualification": qualification,
@@ -53,7 +52,6 @@ const applyTeacher = async (req, res) => {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
-        selectedRole: updatedUser.selectedRole,
         verificationStatus: updatedUser.verificationStatus,
         teacherProfile: {
           bio: updatedUser.teacherProfile.bio,

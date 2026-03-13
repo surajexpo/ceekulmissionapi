@@ -37,8 +37,8 @@ class UserService {
       gender: validatedData.gender,
       dateOfBirth: validatedData.dateOfBirth,
       address: validatedData.address,
-      selectedRole: validatedData.selectedRole,
-      partnerType: validatedData.selectedRole === 'Partner' ? validatedData.partnerType : undefined,
+      address: validatedData.address,
+      partnerType: validatedData.partnerType,
       activityType: validatedData.activityType || [],
       modeOptions: validatedData.modeOptions || [],
       expertTypes: validatedData.expertTypes || [],
@@ -51,7 +51,7 @@ class UserService {
     // Auto-verify teachers who registered via MOBILE_OTP.
     // The phone was already verified by OTP before signup was called,
     // so no admin approval is required.
-    if (userData.selectedRole === 'Teacher' && authProvider === 'MOBILE_OTP') {
+    if (authProvider === 'MOBILE_OTP') {
       const now = new Date();
       userData.phoneVerified = true;
       userData.verificationStatus = 'Verified';

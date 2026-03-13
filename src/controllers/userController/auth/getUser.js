@@ -41,7 +41,6 @@ const getUserById = async (req, res) => {
       gender: user.gender,
       profileImage: user.profileImage,
       address: user.address,
-      selectedRole: user.selectedRole,
       partnerType: user.partnerType,
       activityType: user.activityType,
       modeOptions: user.modeOptions,

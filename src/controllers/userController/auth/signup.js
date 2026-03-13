@@ -1,6 +1,5 @@
 const UserService = require("../../../services/userService");
 const { generateToken } = require("../../../utils/generateToken");
-
 const signup = async (req, res) => {
   try {
     const data = req.validatedBody ?? req.body;
@@ -21,7 +20,6 @@ const signup = async (req, res) => {
           email: user.email,
           phone: user.phone,
           authProvider: user.authProvider,
-          selectedRole: user.selectedRole,
           verificationStatus: user.verificationStatus,
           status: user.status,
         },

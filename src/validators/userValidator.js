@@ -1,6 +1,5 @@
 const { z } = require('zod');
 const {
-  SELECTED_ROLES,
   PARTNER_TYPES,
   GENDERS,
   ACTIVITY_TYPES,
@@ -54,8 +53,6 @@ const signupSchema = z
 
     address: addressSchema,
 
-    selectedRole: z.enum(SELECTED_ROLES),
-
     partnerType: z.enum(PARTNER_TYPES).optional(),
 
     activityType: z
@@ -83,15 +80,6 @@ const signupSchema = z
       return true;
     },
     { message: 'Password is required for email authentication', path: ['password'] }
-  )
-  .refine(
-    (data) => {
-      if (data.selectedRole === 'Partner') {
-        return !!data.partnerType;
-      }
-      return true;
-    },
-    { message: 'Partner type is required when role is Partner', path: ['partnerType'] }
   );
 
 const updateProfileSchema = z.object({

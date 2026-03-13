@@ -1,17 +1,3 @@
-const SELECTED_ROLES = Object.freeze([
-  "Student",
-  "Teacher",
-  "Researcher",
-  "Entrepreneur",
-  "Director",
-  "Manager",
-  "Volunteer",
-  "Partner",
-  "Investor",
-  "Beneficiary",
-  "Any Other",
-]);
-
 const PARTNER_TYPES = Object.freeze([
   "Service Provider",
   "Infrastructure Provider",
@@ -76,7 +62,6 @@ const VERIFICATION_STATUSES = Object.freeze([
 ]);
 
 module.exports = {
-  SELECTED_ROLES,
   PARTNER_TYPES,
   ACTIVITY_TYPES,
   MODE_OPTIONS,

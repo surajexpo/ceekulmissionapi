@@ -254,7 +254,6 @@ const refreshTokenHandler = async (req, res) => {
     // Generate new token pair
     const tokens = generateTokenPair({
       id: user._id,
-      selectedRole: user.selectedRole,
       authProvider: user.authProvider
     });
 

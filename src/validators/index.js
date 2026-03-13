@@ -7,6 +7,8 @@ const {
   addressSchema,
 } = require('./userValidator');
 
+const { adminRegisterSchema } = require('./adminValidator');
+
 module.exports = {
   signupSchema,
   updateProfileSchema,
@@ -14,4 +16,5 @@ module.exports = {
   emailSchema,
   passwordSchema,
   addressSchema,
+  adminRegisterSchema,
 };

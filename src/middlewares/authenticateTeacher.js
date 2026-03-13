@@ -52,13 +52,8 @@ const authenticateTeacher = async (req, res, next) => {
       });
     }
 
-    // Check if user is a teacher or student
-    if (user.selectedRole !== 'Teacher' && user.selectedRole !== 'Student') {
-      return res.status(403).json({
-        status: false,
-        message: 'Access denied. Teacher or Student role required.'
-      });
-    }
+    // Role check removed as per SELECTED_ROLES removal
+    // Any active user is now allowed to pass this middleware if their status is Active.
 
     // Check if teacher is verified
     // if (user.verificationStatus !== 'Verified') {
