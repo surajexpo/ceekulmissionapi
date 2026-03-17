@@ -60,9 +60,6 @@ const createWorkshopSchema = z.object({
     .trim()
     .max(2000, 'Expert description cannot exceed 2000 characters')
     .optional(),
-  workshopMode: z.enum(['online', 'hybrid'], {
-    errorMap: () => ({ message: 'Workshop mode must be "online" or "hybrid"' })
-  }),
   timezone: z
     .string()
     .trim()
@@ -92,11 +89,6 @@ const updateWorkshopSchema = z.object({
     .string()
     .trim()
     .max(2000, 'Expert description cannot exceed 2000 characters')
-    .optional(),
-  workshopMode: z
-    .enum(['online', 'hybrid'], {
-      errorMap: () => ({ message: 'Workshop mode must be "online" or "hybrid"' })
-    })
     .optional(),
   timezone: z
     .string()

@@ -20,8 +20,14 @@ const deleteWorkshop = async (req, res) => {
             return res.status(404).json({ status: false, message: 'Workshop not found' });
         }
 
-        if (workshop.createdBy.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ status: false, message: 'Access denied. You can only delete your own workshops.' });
+        const { Enrollment } = require('../../models/authModels');
+        const enrollment = await Enrollment.findOne({ workshopId: id, userId: req.user._id });
+
+        if (!enrollment || enrollment.role !== 'Expert') {
+            return res.status(403).json({
+                status: false,
+                message: 'Access denied. Only the Expert (owner) can delete this workshop.'
+            });
         }
 
         // Optional: Only allow deleting draft or cancelled workshops

@@ -21,8 +21,14 @@ const updateWorkshop = async (req, res) => {
       return res.status(404).json({ status: false, message: 'Workshop not found' });
     }
 
-    if (workshop.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ status: false, message: 'Access denied. You can only edit your own workshops.' });
+    const { Enrollment } = require('../../models/authModels');
+    const enrollment = await Enrollment.findOne({ workshopId: id, userId: req.user._id });
+
+    if (!enrollment || !['Expert', 'Instructor'].includes(enrollment.role)) {
+      return res.status(403).json({
+        status: false,
+        message: 'Access denied. You must be enrolled as an Instructor or Expert to update it.'
+      });
     }
 
     if (workshop.status !== 'draft') {
@@ -32,7 +38,7 @@ const updateWorkshop = async (req, res) => {
       });
     }
 
-    const updates = req.validatedBody;
+    const updates = req.validatedBody; // workshopMode already removed via validator
 
     // If sessions are being updated, run timezone-aware validations
     if (updates.sessions) {

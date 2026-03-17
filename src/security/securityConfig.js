@@ -87,7 +87,9 @@ const getCorsConfig = () => {
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
     'http://localhost:3000',
     'http://localhost:4200',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'https://ceekulmission.surajexpo.com',
+
   ];
 
   // Add production origins

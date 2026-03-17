@@ -13,7 +13,6 @@ const createWorkshop = async (req, res) => {
       workshopTitle,
       workshopDescription,
       expertDescription,
-      workshopMode,
       timezone,
       instructorType,
       sessions
@@ -52,7 +51,6 @@ const createWorkshop = async (req, res) => {
       workshopTitle,
       workshopDescription,
       expertDescription,
-      workshopMode,
       timezone,
       instructorType,
       createdBy,
@@ -61,6 +59,15 @@ const createWorkshop = async (req, res) => {
     });
 
     await workshop.save();
+
+    // Automatically enroll the creator as the 'expert'
+    const { Enrollment } = require('../../models/authModels');
+    await Enrollment.create({
+      workshopId: workshop._id,
+      userId: createdBy,
+      role: 'Expert',
+      status: 'active'
+    });
 
     return res.status(201).json({
       status: true,

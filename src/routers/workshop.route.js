@@ -8,7 +8,10 @@ const {
   cancelWorkshop,
   addSession,
   deleteSession,
-  deleteWorkshop
+  deleteWorkshop,
+  enrollWorkshop,
+  getMyEnrolledWorkshops,
+  getWorkshopEnrollees
 } = require('../controllers/workshopController');
 const { authenticateUser } = require('../middlewares');
 const validateRequest = require('../middlewares/validateRequest');
@@ -73,6 +76,27 @@ workshopRoute.patch('/:id/cancel', authenticateUser, cancelWorkshop);
  * @access  User — owner only, draft or cancelled status only
  */
 workshopRoute.delete('/:id', authenticateUser, deleteWorkshop);
+
+/**
+ * @route   POST /api/v1/workshops/:workshopId/enroll
+ * @desc    Enroll in a workshop as a student or instructor
+ * @access  User
+ */
+workshopRoute.post('/:workshopId/enroll', authenticateUser, enrollWorkshop);
+
+/**
+ * @route   GET /api/v1/workshops/enrolled/my
+ * @desc    Get all workshops where the current user is enrolled
+ * @access  User
+ */
+workshopRoute.get('/enrolled/my', authenticateUser, getMyEnrolledWorkshops);
+
+/**
+ * @route   GET /api/v1/workshops/:id/enrollees
+ * @desc    Get all enrollees for a workshop (owner only)
+ * @access  User
+ */
+workshopRoute.get('/:id/enrollees', authenticateUser, getWorkshopEnrollees);
 
 // ==================== SESSION MANAGEMENT ====================
 

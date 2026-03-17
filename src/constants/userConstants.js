@@ -13,7 +13,7 @@ const PARTNER_TYPES = Object.freeze([
   "Non Government Organization (NGO)",
   "Political Party",
   "Website Owner",
-  "Inverstor",
+  "Investor",
   "Beneficiary",
   "Any Other",
 ]);
@@ -31,6 +31,7 @@ const ACTIVITY_TYPES = Object.freeze([
   "Socio-Economic Transformation",
   "Election",
   "Any Other",
+  "Partnership",
 ]);
 
 const MODE_OPTIONS = Object.freeze([

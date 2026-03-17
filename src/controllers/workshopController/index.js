@@ -7,6 +7,9 @@ const cancelWorkshop = require('./cancelWorkshop');
 const addSession = require('./addSession');
 const deleteSession = require('./deleteSession');
 const deleteWorkshop = require('./deleteWorkshop');
+const enrollWorkshop = require('./enrollWorkshop');
+const getMyEnrolledWorkshops = require('./getMyEnrolledWorkshops');
+const getWorkshopEnrollees = require('./getWorkshopEnrollees');
 
 module.exports = {
   getAllWorkshops,
@@ -17,5 +20,8 @@ module.exports = {
   cancelWorkshop,
   addSession,
   deleteSession,
-  deleteWorkshop
+  deleteWorkshop,
+  enrollWorkshop,
+  getMyEnrolledWorkshops,
+  getWorkshopEnrollees
 };

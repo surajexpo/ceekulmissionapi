@@ -22,6 +22,12 @@ const sessionSchema = new mongoose.Schema({
     trim: true,
     maxlength: [200, 'Activity cannot exceed 200 characters']
   },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: [1000, 'Description cannot exceed 1000 characters'],
+    default: ''
+  },
   fee: {
     type: Number,
     required: [true, 'Session fee is required'],
@@ -58,11 +64,6 @@ const workshopSchema = new mongoose.Schema({
     type: String,
     trim: true,
     maxlength: [2000, 'Expert description cannot exceed 2000 characters']
-  },
-  workshopMode: {
-    type: String,
-    enum: ['online', 'hybrid'],
-    required: [true, 'Workshop mode is required']
   },
   timezone: {
     type: String,
