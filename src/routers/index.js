@@ -7,6 +7,7 @@ const router = require('./auth.route.js');
 const teacherRoute = require('./teacher.route.js');
 const courseRoute = require('./course.route.js');
 const workshopRoute = require('./workshop.route.js');
+const partnerInfrastructureRoute = require('./partnerInfrastructure.routes.js');
 
 const appRoutes = (app) => {
   app.get('/api/ping', (_, res) =>
@@ -28,6 +29,9 @@ const appRoutes = (app) => {
 
   // Workshop routes
   app.use('/api/v1/workshops', workshopRoute);
+
+  // Partner Infrastructure routes
+  app.use('/api/partners/infrastructure', partnerInfrastructureRoute);
 
   // Auth routes (Google OAuth, etc.)
   app.use('/api', router);

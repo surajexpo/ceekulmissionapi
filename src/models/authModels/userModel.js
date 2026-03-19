@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const {
+  SELECTED_ROLES,
   PARTNER_TYPES,
   GENDERS,
   ACTIVITY_TYPES,
@@ -139,6 +140,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: EXPERT_TYPES
     }],
+
+    role: {
+      type: String,
+      enum: ['partner', 'teacher', 'student', 'admin', 'superadmin', 'Partner', 'Teacher', 'Student'],
+      default: 'student'
+    },
+
+    selectedRole: {
+      type: String,
+      enum: SELECTED_ROLES,
+      required: [true, 'Selected role is required']
+    },
 
     // ==================== VERIFICATION ====================
     verificationStatus: {

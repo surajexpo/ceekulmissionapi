@@ -10,7 +10,8 @@ const updateProfile = async (req, res) => {
       address,
       activityType,
       modeOptions,
-      expertTypes
+      expertTypes,
+      selectedRole
     } = req.body;
 
     const updates = {};
@@ -38,6 +39,14 @@ const updateProfile = async (req, res) => {
 
     if (Array.isArray(expertTypes)) {
       updates.expertTypes = expertTypes;
+    }
+
+    if (selectedRole) {
+      updates.selectedRole = selectedRole;
+      // Sync system role field
+      if (selectedRole === 'Partner') updates.role = 'Partner';
+      else if (selectedRole === 'Teacher') updates.role = 'Teacher';
+      else updates.role = 'Student';
     }
 
     // Handle address updates
@@ -86,6 +95,7 @@ const updateProfile = async (req, res) => {
       activityType: updatedUser.activityType,
       modeOptions: updatedUser.modeOptions,
       expertTypes: updatedUser.expertTypes,
+      selectedRole: updatedUser.selectedRole,
       verificationStatus: updatedUser.verificationStatus,
       status: updatedUser.status,
       updatedAt: updatedUser.updatedAt

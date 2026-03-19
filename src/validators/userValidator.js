@@ -6,6 +6,7 @@ const {
   MODE_OPTIONS,
   EXPERT_TYPES,
   AUTH_PROVIDERS,
+  SELECTED_ROLES,
 } = require('../constants/userConstants');
 
 const phoneSchema = z
@@ -67,6 +68,7 @@ const signupSchema = z
       .array(z.enum(EXPERT_TYPES))
       .optional()
       .default([]),
+    selectedRole: z.enum(SELECTED_ROLES),
   })
   .refine(
     (data) => data.email || data.phone,
@@ -95,6 +97,7 @@ const updateProfileSchema = z.object({
   activityType: z.array(z.enum(ACTIVITY_TYPES)).optional(),
   modeOptions: z.array(z.enum(MODE_OPTIONS)).optional(),
   expertTypes: z.array(z.enum(EXPERT_TYPES)).optional(),
+  selectedRole: z.enum(SELECTED_ROLES).optional(),
 });
 
 module.exports = {

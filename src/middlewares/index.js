@@ -8,6 +8,7 @@ const {
 } = require('./authenticateTeacher.js');
 
 const validateRequest = require('./validateRequest');
+const authorizePartner = require('./authorizePartner');
 
 module.exports = {
     authenticateUser,
@@ -17,4 +18,5 @@ module.exports = {
     verifyCourseEditable,
     fileUploader,
     validateRequest,
+    authorizePartner,
 };

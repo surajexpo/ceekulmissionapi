@@ -7,6 +7,8 @@ const Workshop = require('../workshopModel.js');
 
 const Enrollment = require('../enrollmentModel.js');
 
+const PartnerInfrastructure = require('../partnerInfrastructure.model.js');
+
 module.exports = {
     User,
     Admin,
@@ -14,5 +16,6 @@ module.exports = {
     EmailOTPModel,
     Course,
     Workshop,
-    Enrollment
+    Enrollment,
+    PartnerInfrastructure
 };

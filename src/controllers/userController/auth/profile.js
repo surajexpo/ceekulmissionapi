@@ -36,7 +36,8 @@ const updateUserProfile = async (req, res) => {
       "address.district",
       "activityType",
       "modeOptions",
-      "expertTypes"
+      "expertTypes",
+      "selectedRole"
     ];
 
     const filteredUpdates = {};
@@ -52,6 +53,13 @@ const updateUserProfile = async (req, res) => {
         }
         filteredUpdates[keys[0]][keys[1]] = updates[keys[0]][keys[1]];
       }
+    }
+
+    // Synchronize system role if selectedRole is updated
+    if (filteredUpdates.selectedRole) {
+      if (filteredUpdates.selectedRole === 'Partner') filteredUpdates.role = 'Partner';
+      else if (filteredUpdates.selectedRole === 'Teacher') filteredUpdates.role = 'Teacher';
+      else filteredUpdates.role = 'Student';
     }
 
     // Handle uploaded image (from multer)
@@ -90,6 +98,7 @@ const updateUserProfile = async (req, res) => {
       activityType: updatedUser.activityType,
       modeOptions: updatedUser.modeOptions,
       expertTypes: updatedUser.expertTypes,
+      selectedRole: updatedUser.selectedRole,
       verificationStatus: updatedUser.verificationStatus,
       status: updatedUser.status,
       updatedAt: updatedUser.updatedAt

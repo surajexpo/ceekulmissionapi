@@ -8,6 +8,16 @@ const {
 } = require('./userValidator');
 
 const { adminRegisterSchema } = require('./adminValidator');
+const {
+  infrastructureSchema,
+  classroomSchema,
+  classroomUpdateSchema,
+  computerLabSchema,
+  computerLabUpdateSchema,
+  facilitySchema,
+  facilityUpdateSchema,
+  infrastructureUpdateSchema
+} = require('./infrastructure.validator');
 
 module.exports = {
   signupSchema,
@@ -17,4 +27,12 @@ module.exports = {
   passwordSchema,
   addressSchema,
   adminRegisterSchema,
+  infrastructureSchema,
+  classroomSchema,
+  classroomUpdateSchema,
+  computerLabSchema,
+  computerLabUpdateSchema,
+  facilitySchema,
+  facilityUpdateSchema,
+  infrastructureUpdateSchema
 };
