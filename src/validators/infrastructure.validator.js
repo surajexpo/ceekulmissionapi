@@ -2,15 +2,39 @@ const { z } = require('zod');
 
 const timeFormatRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+const pricingSchema = z.object({
+  type: z.enum(['Free', 'Share', 'Fixed']).default('Free'),
+  amount: z.number().nonnegative().default(0),
+  unit: z.enum(['Hourly', 'Session']).default('Hourly')
+});
+
 const availabilityScheduleSchema = z.object({
   day: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
   startTime: z.string().regex(timeFormatRegex, 'Start time must be in HH:mm format'),
   endTime: z.string().regex(timeFormatRegex, 'End time must be in HH:mm format'),
-  status: z.enum(['Available', 'Booked', 'Maintenance', 'Closed']),
-  notes: z.string().max(500).optional()
+  status: z.enum(['Available', 'Booked', 'Maintenance', 'Closed']).default('Available'),
+  pricing: pricingSchema.optional().default({ type: 'Free', amount: 0 }),
+  notes: z.string().optional()
 }).refine(data => data.startTime < data.endTime, {
   message: 'End time must be after start time',
   path: ['endTime']
+});
+
+
+const addressSchema = z.object({
+  addressLine1: z.string().trim().max(200).optional(),
+  addressLine2: z.string().trim().max(200).optional(),
+  landmark: z.string().trim().max(200).optional(),
+  city: z.string().trim().max(100).optional(),
+  district: z.string().trim().max(100).optional(),
+  state: z.string().trim().max(100).optional(),
+  country: z.string().trim().max(100).default('India'),
+  pincode: z.string().trim().regex(/^[0-9]{6}$/, 'Invalid pincode').optional()
+});
+
+const locationSchema = z.object({
+  type: z.enum(['Point']).default('Point'),
+  coordinates: z.array(z.number()).length(2).default([0, 0])
 });
 
 const classroomSchema = z.object({
@@ -57,7 +81,8 @@ const infrastructureSchema = z.object({
   title: z.string().trim().min(1, 'Infrastructure title is required'),
   generalInfo: z.object({
     schoolName: z.string().min(1, 'School name is required'),
-    address: z.string().min(1, 'Address is required'),
+    address: addressSchema,
+    location: locationSchema.optional(),
     contactName: z.string().min(1, 'Contact name is required'),
     contactEmail: z.string().email('Invalid contact email'),
     contactPhone: z.string().min(1, 'Contact phone is required'),

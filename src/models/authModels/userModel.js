@@ -31,28 +31,51 @@ const verifierSchema = new mongoose.Schema({
 
 // Address sub-schema
 const addressSchema = new mongoose.Schema({
-  village: {
+  addressLine1: {
     type: String,
-
     trim: true,
-    maxlength: [200, 'Village cannot exceed 200 characters']
+    maxlength: [200, 'Address Line 1 cannot exceed 200 characters']
   },
-  pincode: {
+  addressLine2: {
     type: String,
-
     trim: true,
-    validate: {
-      validator: function (value) {
-        return /^[0-9]{6}$/.test(value);
-      },
-      message: 'Invalid pincode format (must be 6 digits)'
-    }
+    maxlength: [200, 'Address Line 2 cannot exceed 200 characters']
+  },
+  landmark: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'Landmark cannot exceed 200 characters']
+  },
+  city: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'City cannot exceed 100 characters']
   },
   district: {
     type: String,
-
     trim: true,
     maxlength: [100, 'District cannot exceed 100 characters']
+  },
+  state: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'State cannot exceed 100 characters']
+  },
+  country: {
+    type: String,
+    trim: true,
+    default: 'India',
+    maxlength: [100, 'Country cannot exceed 100 characters']
+  },
+  pincode: {
+    type: String,
+    trim: true,
+    validate: {
+      validator: function (value) {
+        return !value || /^[0-9]{6}$/.test(value);
+      },
+      message: 'Invalid pincode format (must be 6 digits)'
+    }
   }
 }, { _id: false });
 
@@ -115,10 +138,20 @@ const userSchema = new mongoose.Schema(
       default: ''
     },
 
-    // ==================== ADDRESS ====================
+    // ==================== ADDRESS & LOCATION ====================
     address: {
       type: addressSchema,
-
+    },
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: [0, 0]
+      }
     },
 
     // ==================== ROLE & CLASSIFICATION ====================
@@ -265,10 +298,11 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// ==================== INDEXES ====================
 // phone and email are already indexed via unique:true+sparse:true on the field definition
+userSchema.index({ location: '2dsphere' });
 userSchema.index({ 'address.pincode': 1 });
 userSchema.index({ 'address.district': 1 });
+userSchema.index({ 'address.city': 1 });
 userSchema.index({ verificationStatus: 1 });
 userSchema.index({ status: 1 });
 

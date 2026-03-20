@@ -1,5 +1,24 @@
 const mongoose = require('mongoose');
 
+// Address sub-schema
+const addressSchema = new mongoose.Schema({
+  addressLine1: { type: String, trim: true },
+  addressLine2: { type: String, trim: true },
+  landmark: { type: String, trim: true },
+  city: { type: String, trim: true },
+  district: { type: String, trim: true },
+  state: { type: String, trim: true },
+  country: { type: String, trim: true, default: 'India' },
+  pincode: {
+    type: String,
+    trim: true,
+    validate: {
+      validator: function (v) { return !v || /^[0-9]{6}$/.test(v); },
+      message: 'Invalid pincode'
+    }
+  }
+}, { _id: false });
+
 // Session sub-schema
 const sessionSchema = new mongoose.Schema({
   date: {
@@ -86,6 +105,13 @@ const workshopSchema = new mongoose.Schema({
     default: 'draft'
   },
   sessions: [sessionSchema],
+  address: {
+    type: addressSchema
+  },
+  location: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], default: [0, 0] }
+  },
   totalRevenuePotential: {
     type: Number,
     default: 0,
@@ -99,8 +125,10 @@ const workshopSchema = new mongoose.Schema({
 // ==================== INDEXES ====================
 workshopSchema.index({ createdBy: 1 });
 workshopSchema.index({ status: 1 });
+workshopSchema.index({ location: '2dsphere' });
 workshopSchema.index({ 'sessions.date': 1 });
 workshopSchema.index({ createdBy: 1, status: 1 });
+workshopSchema.index({ 'address.city': 1 });
 
 // ==================== PRE-SAVE ====================
 workshopSchema.pre('save', function () {

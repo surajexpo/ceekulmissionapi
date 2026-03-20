@@ -29,12 +29,19 @@ const passwordSchema = z
   );
 
 const addressSchema = z.object({
-  village: z.string().trim().min(1, 'Village is required').max(200),
-  pincode: z
-    .string()
-    .trim()
-    .regex(/^[0-9]{6}$/, 'Pincode must be 6 digits'),
-  district: z.string().trim().min(1, 'District is required').max(100),
+  addressLine1: z.string().trim().max(200).optional(),
+  addressLine2: z.string().trim().max(200).optional(),
+  landmark: z.string().trim().max(200).optional(),
+  city: z.string().trim().max(100).optional(),
+  district: z.string().trim().max(100).optional(),
+  state: z.string().trim().max(100).optional(),
+  country: z.string().trim().max(100).default('India'),
+  pincode: z.string().trim().regex(/^[0-9]{6}$/, 'Invalid pincode').optional()
+});
+
+const locationSchema = z.object({
+  type: z.enum(['Point']).default('Point'),
+  coordinates: z.array(z.number()).length(2).default([0, 0])
 });
 
 const signupSchema = z
@@ -52,8 +59,8 @@ const signupSchema = z
       .transform((val) => new Date(val))
       .refine((date) => date < new Date(), 'Date of birth must be in the past'),
 
-    address: addressSchema,
-
+    address: addressSchema.optional(),
+    location: locationSchema.optional(),
     partnerType: z.enum(PARTNER_TYPES).optional(),
 
     activityType: z
@@ -94,6 +101,7 @@ const updateProfileSchema = z.object({
     .refine((date) => date < new Date(), 'Date of birth must be in the past')
     .optional(),
   address: addressSchema.partial().optional(),
+  location: locationSchema.partial().optional(),
   activityType: z.array(z.enum(ACTIVITY_TYPES)).optional(),
   modeOptions: z.array(z.enum(MODE_OPTIONS)).optional(),
   expertTypes: z.array(z.enum(EXPERT_TYPES)).optional(),
