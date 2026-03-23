@@ -31,10 +31,10 @@ const updateWorkshop = async (req, res) => {
       });
     }
 
-    if (workshop.status !== 'draft') {
+    if (!['draft', 'published'].includes(workshop.status)) {
       return res.status(403).json({
         status: false,
-        message: `Workshop cannot be edited in '${workshop.status}' status. Only draft workshops can be edited.`
+        message: `Workshop cannot be edited in '${workshop.status}' status. Only draft or published workshops can be edited.`
       });
     }
 
@@ -69,6 +69,13 @@ const updateWorkshop = async (req, res) => {
         date: new Date(s.date),
         location: s.location || null
       }));
+    }
+
+    // Ensure instructorId is set for all sessions if publishing
+    if (updates.status === 'published' || workshop.status === 'published') {
+      workshop.sessions.forEach(s => {
+        if (!s.instructorId) s.instructorId = workshop.createdBy;
+      });
     }
 
     Object.assign(workshop, updates);

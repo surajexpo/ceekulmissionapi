@@ -103,7 +103,10 @@ const updateWorkshopSchema = z.object({
   sessions: z
     .array(sessionSchema)
     .min(1, 'At least one session is required')
-    .optional()
+    .optional(),
+  status: z.enum(['draft', 'published', 'cancelled'], {
+    errorMap: () => ({ message: 'Status must be "draft", "published", or "cancelled"' })
+  }).optional()
 });
 
 // Used for POST /workshops/:id/sessions — accepts 1 or more sessions in one request

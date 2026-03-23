@@ -68,6 +68,17 @@ const enrollWorkshop = async (req, res) => {
 
     await enrollment.save();
 
+    // Upgrade user role if they enrolled as an instructor
+    if (role === 'Instructor') {
+      const { User } = require('../../models/authModels');
+      await User.findByIdAndUpdate(userId, { 
+        $set: { 
+          role: 'Teacher',
+          selectedRole: 'Teacher'
+        } 
+      });
+    }
+
     return res.status(201).json({
       status: true,
       message: `Enrolled successfully as ${role}`,

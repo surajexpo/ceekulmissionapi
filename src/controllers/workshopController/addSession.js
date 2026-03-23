@@ -31,18 +31,19 @@ const addSession = async (req, res) => {
 
     const { Enrollment } = require('../../models/authModels');
     const enrollment = await Enrollment.findOne({ workshopId: id, userId: req.user._id });
+    const isOwner = workshop.createdBy.toString() === req.user._id.toString();
 
-    if (!enrollment || !['Expert', 'Instructor'].includes(enrollment.role)) {
+    if (!isOwner && (!enrollment || enrollment.role !== 'Instructor')) {
       return res.status(403).json({
         status: false,
-        message: 'Access denied. You must be enrolled as an Instructor or Expert to add sessions.'
+        message: 'Access denied. You must be the owner or an enrolled Instructor to add sessions.'
       });
     }
 
-    if (workshop.status !== 'draft') {
+    if (!['draft', 'published'].includes(workshop.status)) {
       return res.status(403).json({
         status: false,
-        message: `Sessions can only be added to draft workshops. Current status: '${workshop.status}'.`
+        message: `Sessions can only be added to draft or published workshops. Current status: '${workshop.status}'.`
       });
     }
 
@@ -89,6 +90,7 @@ const addSession = async (req, res) => {
     // Map incoming sessions to the shape expected by the subdocument schema
     const sessionDocs = newSessions.map((s) => ({
       ...s,
+      instructorId: req.user._id,
       date: new Date(s.date),
       location: s.location || null
     }));

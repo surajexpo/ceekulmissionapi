@@ -150,7 +150,7 @@ const PartnerInfrastructureSchema = new mongoose.Schema({
 
 // Indexes
 PartnerInfrastructureSchema.index({ partnerId: 1 });
-PartnerInfrastructureSchema.index({ location: '2dsphere' });
+PartnerInfrastructureSchema.index({ 'generalInfo.location': '2dsphere' });
 PartnerInfrastructureSchema.index({ 'title': 1 }); // Helpful for searching by title
 PartnerInfrastructureSchema.index({ 'classrooms.id': 1 });
 PartnerInfrastructureSchema.index({ 'computerLabs.id': 1 });

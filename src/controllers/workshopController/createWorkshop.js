@@ -44,7 +44,8 @@ const createWorkshop = async (req, res) => {
     const mappedSessions = sessions.map((s) => ({
       ...s,
       date: new Date(s.date),
-      location: s.location || null
+      location: s.location || null,
+      instructorId: createdBy
     }));
 
     const workshop = new Workshop({

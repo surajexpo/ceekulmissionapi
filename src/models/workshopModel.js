@@ -61,6 +61,11 @@ const sessionSchema = new mongoose.Schema({
     type: String,
     trim: true,
     default: null
+  },
+  instructorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
   }
 }, { _id: true });
 

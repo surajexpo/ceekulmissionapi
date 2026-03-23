@@ -28,27 +28,36 @@ const deleteSession = async (req, res) => {
 
     const { Enrollment } = require('../../models/authModels');
     const enrollment = await Enrollment.findOne({ workshopId: id, userId: req.user._id });
+    const isOwner = workshop.createdBy.toString() === req.user._id.toString();
 
-    if (!enrollment || !['Expert', 'Instructor'].includes(enrollment.role)) {
+    if (!isOwner && (!enrollment || enrollment.role !== 'Instructor')) {
       return res.status(403).json({
         status: false,
-        message: 'Access denied. You must be enrolled as an Instructor or Expert to remove sessions.'
+        message: 'Access denied. You must be the owner or an enrolled Instructor to remove sessions.'
       });
     }
 
-    if (workshop.status !== 'draft') {
+    if (!['draft', 'published'].includes(workshop.status)) {
       return res.status(403).json({
         status: false,
-        message: `Sessions can only be removed from draft workshops. Current status: '${workshop.status}'.`
+        message: `Sessions can only be removed from draft or published workshops. Current status: '${workshop.status}'.`
       });
     }
 
-    const sessionExists = workshop.sessions.some(
+    const targetSession = workshop.sessions.find(
       (s) => s._id.toString() === sessionId
     );
 
-    if (!sessionExists) {
+    if (!targetSession) {
       return res.status(404).json({ status: false, message: 'Session not found in this workshop' });
+    }
+
+    // Permission check: Owner can delete anything. Instructor can only delete THEIR sessions.
+    if (!isOwner && (!targetSession.instructorId || targetSession.instructorId.toString() !== req.user._id.toString())) {
+      return res.status(403).json({
+        status: false,
+        message: 'Access denied. You can only remove your own sessions.'
+      });
     }
 
     if (workshop.sessions.length === 1) {

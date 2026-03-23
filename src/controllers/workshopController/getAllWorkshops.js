@@ -7,10 +7,18 @@ const Workshop = require('../../models/workshopModel');
  */
 const getAllWorkshops = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, q } = req.query;
 
-    // For public view, we show published and draft workshops (including drafts for testing)
-    const filter = { status: { $in: ['published', 'draft'] } };
+    // For public view, we only show workshops that are published, active, or ongoing.
+    const filter = { status: { $in: ['published', 'active', 'ongoing'] } };
+
+    // If a search query is provided, add regex filters for title and description
+    if (q) {
+      filter.$or = [
+        { workshopTitle: { $regex: q, $options: 'i' } },
+        { workshopDescription: { $regex: q, $options: 'i' } }
+      ];
+    }
 
     const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 

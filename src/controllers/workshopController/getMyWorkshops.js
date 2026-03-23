@@ -7,11 +7,21 @@ const Workshop = require('../../models/workshopModel');
  */
 const getMyWorkshops = async (req, res) => {
   try {
-    const createdBy = req.user._id;
-
     const { status, page = 1, limit = 10 } = req.query;
 
-    const filter = { createdBy };
+    // Find workshops created by the user OR where the user is an enrolled Instructor
+    const { Enrollment } = require('../../models/authModels');
+    const enrolledIds = await Enrollment.find({
+      userId: req.user._id,
+      role: 'Instructor'
+    }).distinct('workshopId');
+
+    const filter = {
+      $or: [
+        { createdBy: req.user._id },
+        { _id: { $in: enrolledIds } }
+      ]
+    };
     if (status) {
       const allowed = ['draft', 'published', 'cancelled'];
       if (!allowed.includes(status)) {
