@@ -1,4 +1,6 @@
-const { Workshop, Enrollment } = require('../../models/authModels');
+const Workshop = require('../../models/workshopModel');
+const Enrollment = require('../../models/enrollmentModel');
+const User = require('../../models/authModels/userModel');
 
 /**
  * Enroll in a workshop
@@ -8,8 +10,10 @@ const { Workshop, Enrollment } = require('../../models/authModels');
 const enrollWorkshop = async (req, res) => {
   try {
     const { workshopId } = req.params;
-    let { role } = req.body;
+    let { role, scheduleId } = req.body;
     const userId = req.user._id;
+
+    console.log('Enroll Request:', { workshopId, role, scheduleId, userId });
 
     if (!role) {
       return res.status(400).json({
@@ -43,40 +47,60 @@ const enrollWorkshop = async (req, res) => {
       });
     }
 
-    // Check if user is already enrolled
-    const existingEnrollment = await Enrollment.findOne({ workshopId, userId });
-    if (existingEnrollment) {
+    // Validate scheduleId if provided or if role is Student
+    if (role === 'Student' && !scheduleId) {
       return res.status(400).json({
         status: false,
-        message: 'You are already enrolled in this workshop'
+        message: 'A specific schedule must be selected for student enrollment.'
       });
     }
 
-    // Enrollment Rules
-    // Anyone can enroll as an instructor or student regardless of instructorType
-    // (Simplification based on user request)
+    if (scheduleId) {
+      const scheduleExists = workshop.schedules.some(s => s._id.toString() === scheduleId);
+      if (!scheduleExists) {
+        return res.status(400).json({
+          status: false,
+          message: 'The selected schedule does not belong to this workshop.'
+        });
+      }
+    }
 
-    // In a real system, we might check if a student has paid if the workshop is paid
-    // But for now, we follow the basic enrollment rules
+    // Check if user is already enrolled with this role in this workshop
+    const query = { workshopId, userId, role };
+    if (scheduleId) query.scheduleId = scheduleId;
+    
+    console.log('Duplicate Check Query:', query);
+    const existingEnrollment = await Enrollment.findOne(query);
+    if (existingEnrollment) {
+      return res.status(400).json({
+        status: false,
+        message: scheduleId ? `You are already enrolled as ${role.toLowerCase()} in this schedule` : `You are already enrolled as ${role.toLowerCase()} in this workshop`
+      });
+    }
 
     const enrollment = new Enrollment({
       workshopId,
       userId,
       role,
+      scheduleId: scheduleId || undefined,
       status: 'active'
     });
 
+    console.log('Final Enrollment Payload:', enrollment);
     await enrollment.save();
 
     // Upgrade user role if they enrolled as an instructor
     if (role === 'Instructor') {
-      const { User } = require('../../models/authModels');
-      await User.findByIdAndUpdate(userId, { 
-        $set: { 
-          role: 'Teacher',
-          selectedRole: 'Teacher'
-        } 
-      });
+      try {
+        await User.findByIdAndUpdate(userId, { 
+          $set: { 
+            role: 'Teacher',
+            selectedRole: 'Teacher'
+          } 
+        });
+      } catch (err) {
+        console.error('User Role Upgrade Error (swallowed):', err);
+      }
     }
 
     return res.status(201).json({
@@ -86,10 +110,10 @@ const enrollWorkshop = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Enroll Workshop Error:', error);
+    console.error('Enroll Workshop Global Catch:', error);
     return res.status(500).json({
       status: false,
-      message: 'Failed to enroll in workshop'
+      message: error.message || 'Failed to enroll in workshop'
     });
   }
 };

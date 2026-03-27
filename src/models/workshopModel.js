@@ -19,11 +19,11 @@ const addressSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-// Session sub-schema
-const sessionSchema = new mongoose.Schema({
+// Schedule sub-schema (formerly Session)
+const scheduleSchema = new mongoose.Schema({
   date: {
     type: Date,
-    required: [true, 'Session date is required']
+    required: [true, 'Schedule date is required']
   },
   startTime: {
     type: String,
@@ -37,9 +37,14 @@ const sessionSchema = new mongoose.Schema({
   },
   activity: {
     type: String,
-    required: [true, 'Session activity is required'],
     trim: true,
-    maxlength: [200, 'Activity cannot exceed 200 characters']
+    maxlength: [200, 'Activity cannot exceed 200 characters'],
+    default: ''
+  },
+  sessionOrder: {
+    type: Number,
+    enum: [1, 2, 3],
+    required: [true, 'Session order mapping is required']
   },
   description: {
     type: String,
@@ -49,13 +54,13 @@ const sessionSchema = new mongoose.Schema({
   },
   fee: {
     type: Number,
-    required: [true, 'Session fee is required'],
+    required: [true, 'Schedule fee is required'],
     min: [0, 'Fee cannot be negative']
   },
   mode: {
     type: String,
     enum: ['online', 'hybrid'],
-    required: [true, 'Session mode is required']
+    required: [true, 'Schedule mode is required']
   },
   location: {
     type: String,
@@ -65,7 +70,11 @@ const sessionSchema = new mongoose.Schema({
   instructorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: false
+    required: [true, 'Instructor ID is required to track who manages this schedule']
+  },
+  timezone: {
+    type: String,
+    required: [true, 'Timezone is required for each schedule']
   }
 }, { _id: true });
 
@@ -89,15 +98,7 @@ const workshopSchema = new mongoose.Schema({
     trim: true,
     maxlength: [2000, 'Expert description cannot exceed 2000 characters']
   },
-  timezone: {
-    type: String,
-    required: [true, 'Timezone is required']
-  },
-  instructorType: {
-    type: String,
-    enum: ['myself', 'open'],
-    required: [true, 'Instructor type is required']
-  },
+
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -109,7 +110,27 @@ const workshopSchema = new mongoose.Schema({
     enum: ['draft', 'published', 'cancelled'],
     default: 'draft'
   },
-  sessions: [sessionSchema],
+  threeHourPlan: {
+    hour1: {
+      title: { type: String, required: [true, 'Hour 1 title is required'] },
+      description: { type: String, required: [true, 'Hour 1 description is required'] },
+      expertAllowed: { type: Boolean, default: true },
+      instructorAllowed: { type: Boolean, default: false }
+    },
+    hour2: {
+      title: { type: String, default: 'Hands On' },
+      description: { type: String, required: [true, 'Hour 2 description is required'] },
+      expertAllowed: { type: Boolean, default: true },
+      instructorAllowed: { type: Boolean, default: true }
+    },
+    hour3: {
+      title: { type: String, default: 'Project Discussion' },
+      description: { type: String, required: [true, 'Hour 3 description is required'] },
+      expertAllowed: { type: Boolean, default: true },
+      instructorAllowed: { type: Boolean, default: true }
+    }
+  },
+  schedules: [scheduleSchema],
   address: {
     type: addressSchema
   },
@@ -131,14 +152,14 @@ const workshopSchema = new mongoose.Schema({
 workshopSchema.index({ createdBy: 1 });
 workshopSchema.index({ status: 1 });
 workshopSchema.index({ location: '2dsphere' });
-workshopSchema.index({ 'sessions.date': 1 });
+workshopSchema.index({ 'schedules.date': 1 });
 workshopSchema.index({ createdBy: 1, status: 1 });
 workshopSchema.index({ 'address.city': 1 });
 
 // ==================== PRE-SAVE ====================
 workshopSchema.pre('save', function () {
-  if (this.sessions && this.sessions.length > 0) {
-    this.totalRevenuePotential = this.sessions.reduce((sum, s) => sum + (s.fee || 0), 0);
+  if (this.schedules && this.schedules.length > 0) {
+    this.totalRevenuePotential = this.schedules.reduce((sum, s) => sum + (s.fee || 0), 0);
   }
 });
 

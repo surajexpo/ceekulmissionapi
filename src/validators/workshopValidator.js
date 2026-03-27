@@ -12,7 +12,7 @@ const isValidTimezone = (tz) => {
   }
 };
 
-const sessionSchema = z.object({
+const scheduleSchema = z.object({
   date: z
     .string()
     .regex(dateRegex, 'Date must be in YYYY-MM-DD format'),
@@ -22,18 +22,23 @@ const sessionSchema = z.object({
   endTime: z
     .string()
     .regex(timeRegex, 'End time must be in HH:mm format'),
+  sessionOrder: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   activity: z
     .string()
     .trim()
-    .min(1, 'Activity is required')
-    .max(200, 'Activity cannot exceed 200 characters'),
+    .max(200, 'Activity cannot exceed 200 characters')
+    .optional(),
   fee: z
     .number({ invalid_type_error: 'Fee must be a number' })
     .min(0, 'Fee must be non-negative'),
   mode: z.enum(['online', 'hybrid'], {
     errorMap: () => ({ message: 'Session mode must be "online" or "hybrid"' })
   }),
-  location: z.string().trim().nullable().optional()
+  location: z.string().trim().nullable().optional(),
+  timezone: z
+    .string()
+    .trim()
+    .refine(isValidTimezone, 'Invalid IANA timezone string')
 })
   .refine(
     (s) => s.startTime < s.endTime,
@@ -60,16 +65,16 @@ const createWorkshopSchema = z.object({
     .trim()
     .max(2000, 'Expert description cannot exceed 2000 characters')
     .optional(),
-  timezone: z
-    .string()
-    .trim()
-    .refine(isValidTimezone, 'Invalid IANA timezone string'),
-  instructorType: z.enum(['myself', 'open'], {
-    errorMap: () => ({ message: 'Instructor type must be "myself" or "open"' })
-  }),
-  sessions: z
-    .array(sessionSchema)
-    .min(1, 'At least one session is required')
+
+  threeHourPlan: z.object({
+    hour1: z.object({ title: z.string().trim().min(1, 'Hour 1 title is required'), description: z.string().trim().min(1, 'Hour 1 description is required'), expertAllowed: z.boolean().optional(), instructorAllowed: z.boolean().optional() }),
+    hour2: z.object({ title: z.string().trim().default('Hands On'), description: z.string().trim().min(1, 'Hour 2 description is required'), expertAllowed: z.boolean().optional(), instructorAllowed: z.boolean().optional() }),
+    hour3: z.object({ title: z.string().trim().default('Project Discussion'), description: z.string().trim().min(1, 'Hour 3 description is required'), expertAllowed: z.boolean().optional(), instructorAllowed: z.boolean().optional() })
+  }).optional(),
+  schedules: z
+    .array(scheduleSchema)
+    .min(0, 'Schedules are optional during creation')
+    .optional()
 });
 
 const updateWorkshopSchema = z.object({
@@ -90,28 +95,24 @@ const updateWorkshopSchema = z.object({
     .trim()
     .max(2000, 'Expert description cannot exceed 2000 characters')
     .optional(),
-  timezone: z
-    .string()
-    .trim()
-    .refine(isValidTimezone, 'Invalid IANA timezone string')
-    .optional(),
-  instructorType: z
-    .enum(['myself', 'open'], {
-      errorMap: () => ({ message: 'Instructor type must be "myself" or "open"' })
-    })
-    .optional(),
-  sessions: z
-    .array(sessionSchema)
-    .min(1, 'At least one session is required')
+
+  threeHourPlan: z.object({
+    hour1: z.object({ title: z.string().trim().min(1, 'Hour 1 title is required'), description: z.string().trim().min(1, 'Hour 1 description is required'), expertAllowed: z.boolean().optional(), instructorAllowed: z.boolean().optional() }),
+    hour2: z.object({ title: z.string().trim().default('Hands On'), description: z.string().trim().min(1, 'Hour 2 description is required'), expertAllowed: z.boolean().optional(), instructorAllowed: z.boolean().optional() }),
+    hour3: z.object({ title: z.string().trim().default('Project Discussion'), description: z.string().trim().min(1, 'Hour 3 description is required'), expertAllowed: z.boolean().optional(), instructorAllowed: z.boolean().optional() })
+  }).optional(),
+  schedules: z
+    .array(scheduleSchema)
+    .min(0)
     .optional(),
   status: z.enum(['draft', 'published', 'cancelled'], {
     errorMap: () => ({ message: 'Status must be "draft", "published", or "cancelled"' })
   }).optional()
 });
 
-// Used for POST /workshops/:id/sessions — accepts 1 or more sessions in one request
-const addSessionsSchema = z.object({
-  sessions: z.array(sessionSchema).min(1, 'At least one session is required')
+// Used for POST /workshops/:id/schedules — accepts 1 or more schedules in one request
+const addSchedulesSchema = z.object({
+  schedules: z.array(scheduleSchema).min(1, 'At least one schedule is required')
 });
 
-module.exports = { sessionSchema, addSessionsSchema, createWorkshopSchema, updateWorkshopSchema };
+module.exports = { scheduleSchema, addSchedulesSchema, createWorkshopSchema, updateWorkshopSchema };

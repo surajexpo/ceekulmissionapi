@@ -6,8 +6,8 @@ const {
   getWorkshop,
   updateWorkshop,
   cancelWorkshop,
-  addSession,
-  deleteSession,
+  addSchedule,
+  deleteSchedule,
   deleteWorkshop,
   enrollWorkshop,
   getMyEnrolledWorkshops,
@@ -15,7 +15,7 @@ const {
 } = require('../controllers/workshopController');
 const { authenticateUser } = require('../middlewares');
 const validateRequest = require('../middlewares/validateRequest');
-const { addSessionsSchema, createWorkshopSchema, updateWorkshopSchema } = require('../validators/workshopValidator');
+const { addSchedulesSchema, createWorkshopSchema, updateWorkshopSchema } = require('../validators/workshopValidator');
 
 
 /**
@@ -98,32 +98,31 @@ workshopRoute.get('/enrolled/my', authenticateUser, getMyEnrolledWorkshops);
  */
 workshopRoute.get('/:id/enrollees', authenticateUser, getWorkshopEnrollees);
 
-// ==================== SESSION MANAGEMENT ====================
+// ==================== SCHEDULE MANAGEMENT ====================
 
 /**
- * @route   POST /api/v1/workshops/:id/sessions
- * @desc    Add one or more sessions to a draft workshop in a single request.
- *          Body: { "sessions": [ {...}, {...} ] }
- *          Validates per-session rules + cross-session + existing overlap.
- * @access  User — owner only, draft only
+ * @route   POST /api/v1/workshops/:id/schedules
+ * @desc    Add one or more schedules to a draft/published workshop in a single request.
+ *          Body: { "schedules": [ {...}, {...} ] }
+ *          Validates role-based scheduling + instructor/facility overlap.
+ * @access  User — owner or enrolled instructor
  */
 workshopRoute.post(
-  '/:id/sessions',
+  '/:id/schedules',
   authenticateUser,
-  validateRequest(addSessionsSchema),
-  addSession
+  validateRequest(addSchedulesSchema),
+  addSchedule
 );
 
 /**
- * @route   DELETE /api/v1/workshops/:id/sessions/:sessionId
- * @desc    Remove a session from a draft workshop by its subdocument _id.
- *          At least one session must remain.
- * @access  User — owner only, draft only
+ * @route   DELETE /api/v1/workshops/:id/schedules/:scheduleId
+ * @desc    Remove a schedule from a workshop by its subdocument _id.
+ * @access  User — owner or enrolled instructor
  */
 workshopRoute.delete(
-  '/:id/sessions/:sessionId',
+  '/:id/schedules/:scheduleId',
   authenticateUser,
-  deleteSession
+  deleteSchedule
 );
 
 module.exports = workshopRoute;

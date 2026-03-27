@@ -38,25 +38,24 @@ const updateWorkshop = async (req, res) => {
       });
     }
 
-    const updates = req.validatedBody; // workshopMode already removed via validator
+    const updates = req.validatedBody;
 
-    // If sessions are being updated, run timezone-aware validations
-    if (updates.sessions) {
-      const timezone = updates.timezone || workshop.timezone;
+    // If schedules are being updated, run timezone-aware validations
+    if (updates.schedules && updates.schedules.length > 0) {
       const now = new Date();
 
-      for (let i = 0; i < updates.sessions.length; i++) {
-        const s = updates.sessions[i];
-        const startUTC = localToUTC(s.date, s.startTime, timezone);
+      for (let i = 0; i < updates.schedules.length; i++) {
+        const s = updates.schedules[i];
+        const startUTC = localToUTC(s.date, s.startTime, s.timezone);
         if (startUTC <= now) {
           return res.status(400).json({
             status: false,
-            message: `Session ${i + 1} start date/time must be in the future`
+            message: `Schedule ${i + 1} start date/time must be in the future`
           });
         }
       }
 
-      const { hasConflict, conflictDetails } = detectSessionConflicts(updates.sessions, timezone);
+      const { hasConflict, conflictDetails } = detectSessionConflicts(updates.schedules);
       if (hasConflict) {
         return res.status(409).json({
           status: false,
@@ -64,16 +63,24 @@ const updateWorkshop = async (req, res) => {
         });
       }
 
-      updates.sessions = updates.sessions.map((s) => ({
-        ...s,
-        date: new Date(s.date),
-        location: s.location || null
-      }));
+      const planSource = updates.threeHourPlan || workshop.threeHourPlan;
+      updates.schedules = updates.schedules.map((s) => {
+        const plan = planSource && planSource['hour' + s.sessionOrder];
+        return {
+          ...s,
+          activity: plan ? plan.title : '',
+          description: plan ? plan.description : '',
+          date: new Date(s.date),
+          location: s.location || null
+        };
+      });
+    } else if (updates.schedules && updates.schedules.length === 0) {
+        updates.schedules = [];
     }
 
-    // Ensure instructorId is set for all sessions if publishing
+    // Ensure instructorId is set for all schedules if publishing
     if (updates.status === 'published' || workshop.status === 'published') {
-      workshop.sessions.forEach(s => {
+      workshop.schedules.forEach(s => {
         if (!s.instructorId) s.instructorId = workshop.createdBy;
       });
     }

@@ -13,49 +13,54 @@ const createWorkshop = async (req, res) => {
       workshopTitle,
       workshopDescription,
       expertDescription,
-      timezone,
-      instructorType,
-      sessions
+      threeHourPlan,
+      schedules = []
     } = req.validatedBody;
 
-    // Validate each session date is not in the past (timezone-aware)
+    // Validate each schedule date is not in the past (timezone-aware)
     const now = new Date();
-    for (let i = 0; i < sessions.length; i++) {
-      const s = sessions[i];
-      const startUTC = localToUTC(s.date, s.startTime, timezone);
-      if (startUTC <= now) {
-        return res.status(400).json({
+    if (schedules && schedules.length > 0) {
+      for (let i = 0; i < schedules.length; i++) {
+        const s = schedules[i];
+        const startUTC = localToUTC(s.date, s.startTime, s.timezone);
+        if (startUTC <= now) {
+          return res.status(400).json({
+            status: false,
+            message: `Schedule ${i + 1} start date/time must be in the future`
+          });
+        }
+      }
+
+      // Detect schedule time overlaps
+      const { hasConflict, conflictDetails } = detectSessionConflicts(schedules);
+      if (hasConflict) {
+        return res.status(409).json({
           status: false,
-          message: `Session ${i + 1} start date/time must be in the future`
+          message: `Schedule conflict detected: ${conflictDetails}`
         });
       }
     }
 
-    // Detect session time overlaps
-    const { hasConflict, conflictDetails } = detectSessionConflicts(sessions, timezone);
-    if (hasConflict) {
-      return res.status(409).json({
-        status: false,
-        message: `Schedule conflict detected: ${conflictDetails}`
-      });
-    }
-
-    // Map sessions: convert date string to Date object
-    const mappedSessions = sessions.map((s) => ({
-      ...s,
-      date: new Date(s.date),
-      location: s.location || null,
-      instructorId: createdBy
-    }));
+    // Map schedules: convert date string to Date object
+    const mappedSchedules = (schedules || []).map((s) => {
+      const plan = threeHourPlan && threeHourPlan['hour' + s.sessionOrder];
+      return {
+        ...s,
+        activity: plan ? plan.title : '',
+        description: plan ? plan.description : '',
+        date: new Date(s.date),
+        location: s.location || null,
+        instructorId: createdBy
+      };
+    });
 
     const workshop = new Workshop({
       workshopTitle,
       workshopDescription,
       expertDescription,
-      timezone,
-      instructorType,
       createdBy,
-      sessions: mappedSessions,
+      threeHourPlan,
+      schedules: mappedSchedules,
       status: 'draft'
     });
 

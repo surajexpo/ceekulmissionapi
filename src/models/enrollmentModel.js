@@ -7,6 +7,11 @@ const enrollmentSchema = new mongoose.Schema({
     required: [true, 'Workshop ID is required'],
     index: true
   },
+  scheduleId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: false,
+    index: true
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -33,8 +38,12 @@ const enrollmentSchema = new mongoose.Schema({
   collection: 'enrollments'
 });
 
-// Ensure a user is only enrolled in a workshop once with a specific role (or at all)
-enrollmentSchema.index({ workshopId: 1, userId: 1 }, { unique: true });
+// Ensure a user is only enrolled in a workshop once with a specific role
+// Wait, if a student enrolls in multiple schedules in the SAME workshop, they might fail this unique check!
+// Let's modify the index to include scheduleId if the role is student and scheduleId is present
+// Note: For now, keeping the unique index simple, but we should drop the unique index if students can re-enroll multiple schedules
+// Actually, since students only enroll in one schedule per session, maybe unique across (workshopId, userId, scheduleId)?
+enrollmentSchema.index({ workshopId: 1, userId: 1, scheduleId: 1 }, { unique: true });
 
 const Enrollment = mongoose.model('Enrollment', enrollmentSchema);
 

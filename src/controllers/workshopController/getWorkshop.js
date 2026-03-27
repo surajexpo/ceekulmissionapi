@@ -14,7 +14,9 @@ const getWorkshop = async (req, res) => {
       return res.status(400).json({ status: false, message: 'Invalid workshop ID' });
     }
 
-    const workshop = await Workshop.findById(id).select('-__v');
+    const workshop = await Workshop.findById(id)
+      .populate('schedules.instructorId', 'name')
+      .select('-__v');
 
     if (!workshop) {
       return res.status(404).json({ status: false, message: 'Workshop not found' });
@@ -22,25 +24,29 @@ const getWorkshop = async (req, res) => {
 
     // Access check: Owner, Enrolled user, or anyone if workshop is published
     const { Enrollment } = require('../../models/authModels');
-    const enrollment = await Enrollment.findOne({ workshopId: id, userId: req.user._id });
+    const enrollments = await Enrollment.find({ workshopId: id, userId: req.user._id });
     const isOwner = workshop.createdBy.toString() === req.user._id.toString();
 
     const isPublicStatus = ['published', 'active', 'ongoing'].includes(workshop.status);
-    
-    if (!isOwner && !enrollment && !isPublicStatus) {
+
+    if (!isOwner && enrollments.length === 0 && !isPublicStatus) {
       return res.status(403).json({
         status: false,
         message: 'Access denied. You must be the owner or enrolled to view this workshop.'
       });
     }
 
-    // Add enrollment info to response so frontend knows the user's role in this workshop
+    // Add enrollment info to response
     const workshopData = workshop.toObject();
-    if (enrollment) {
-      workshopData.userEnrollment = {
-        role: enrollment.role,
-        status: enrollment.status
-      };
+    workshopData.userEnrollments = enrollments.map(e => ({
+      role: e.role,
+      status: e.status,
+      scheduleId: e.scheduleId
+    }));
+
+    // Backwards compatibility for single enrollment check (first one)
+    if (enrollments.length > 0) {
+      workshopData.userEnrollment = workshopData.userEnrollments[0];
     }
 
     return res.status(200).json({

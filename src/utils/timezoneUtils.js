@@ -66,35 +66,49 @@ function localToUTC(dateStr, timeStr, timezone) {
  * All sessions must share the same timezone (workshop-level field).
  *
  * @param {Array} sessions - Array of session objects { date, startTime, endTime }
- * @param {string} timezone - IANA timezone string
+ * @param {string} defaultTimezone - IANA timezone string
  * @returns {{ hasConflict: boolean, conflictDetails: string|null }}
  */
-function detectSessionConflicts(sessions, timezone) {
+function detectSessionConflicts(sessions, defaultTimezone) {
   // Build UTC intervals
   const intervals = sessions.map((s, i) => {
     const dateStr = s.date instanceof Date
       ? s.date.toISOString().slice(0, 10)
       : s.date;
 
+    const tz = s.timezone || defaultTimezone;
+
     return {
       index: i,
-      startUTC: localToUTC(dateStr, s.startTime, timezone),
-      endUTC: localToUTC(dateStr, s.endTime, timezone)
+      startUTC: localToUTC(dateStr, s.startTime, tz),
+      endUTC: localToUTC(dateStr, s.endTime, tz),
+      instructorId: s.instructorId ? s.instructorId.toString() : 'default',
+      location: s.location || ''
     };
   });
 
-  // Sort by start time
-  intervals.sort((a, b) => a.startUTC - b.startUTC);
+  // O(N^2) comparison for overlaps
+  for (let i = 0; i < intervals.length; i++) {
+    for (let j = i + 1; j < intervals.length; j++) {
+      const a = intervals[i];
+      const b = intervals[j];
 
-  for (let i = 1; i < intervals.length; i++) {
-    const prev = intervals[i - 1];
-    const curr = intervals[i];
-
-    if (curr.startUTC < prev.endUTC) {
-      return {
-        hasConflict: true,
-        conflictDetails: `Session ${prev.index + 1} and session ${curr.index + 1} have overlapping times`
-      };
+      // Check if times overlap strictly
+      if (a.startUTC < b.endUTC && b.startUTC < a.endUTC) {
+        // Only conflict if same instructor OR same non-empty location
+        if (a.instructorId === b.instructorId) {
+          return {
+            hasConflict: true,
+            conflictDetails: `Schedule ${a.index + 1} and schedule ${b.index + 1} overlap for the same instructor`
+          };
+        }
+        if (a.location && a.location === b.location) {
+          return {
+            hasConflict: true,
+            conflictDetails: `Schedule ${a.index + 1} and schedule ${b.index + 1} overlap at the same location`
+          };
+        }
+      }
     }
   }
 
