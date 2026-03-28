@@ -10,9 +10,10 @@ class UserService {
       else authProvider = 'MOBILE_OTP';
     }
 
-    // Check for existing users
-    if (validatedData.email) {
-      const existing = await User.findOne({ email: validatedData.email.toLowerCase() });
+    // Check for existing users - Trim before checking
+    const normalizedEmail = validatedData.email?.trim().toLowerCase();
+    if (normalizedEmail) {
+      const existing = await User.findOne({ email: normalizedEmail });
       if (existing) {
         const err = new Error('Email already registered');
         err.status = 409;

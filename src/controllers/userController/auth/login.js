@@ -1,7 +1,12 @@
+const mongoose = require("mongoose");
 const { User } = require("../../../models/authModels");
 const { generateToken } = require("../../../utils/generateToken");
 
 const login = async (req, res) => {
+  // Diagnostic logs for Render environment
+  console.log(`[LOGIN DIAGNOSTIC] Mongoose version: ${mongoose.version}`);
+  console.log(`[LOGIN DIAGNOSTIC] DB Connection: ${mongoose.connection.name}`);
+  
   try {
     const { email, password, phone, loginMethod } = req.body;
 
@@ -17,10 +22,12 @@ const login = async (req, res) => {
         });
       }
 
-      // Find user with password field
-      const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+      // Find user with password field - Trim email to handle accidental spaces
+      const normalizedEmail = email.trim().toLowerCase();
+      const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
       if (!user) {
+        console.warn(`Login attempt failed: User not found for email: ${normalizedEmail}`);
         return res.status(401).json({
           status: false,
           message: "Invalid credentials"
@@ -55,6 +62,7 @@ const login = async (req, res) => {
       const isPasswordValid = await user.comparePassword(password);
 
       if (!isPasswordValid) {
+        console.warn(`Login attempt failed: Invalid password for email: ${normalizedEmail}`);
         await user.incrementLoginAttempts();
         return res.status(401).json({
           status: false,
