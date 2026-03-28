@@ -144,12 +144,18 @@ app.use((err, req, res, next) => {
     });
   }
 
-  // Mongoose validation errors
+  // Validation errors (Mongoose or others)
   if (err.name === 'ValidationError') {
-    const messages = Object.values(err.errors).map(e => e.message);
+    let message = err.message;
+    
+    // Specifically handle Mongoose validation errors which have an 'errors' object
+    if (err.errors && typeof err.errors === 'object') {
+      message = Object.values(err.errors).map(e => e.message).join(', ');
+    }
+    
     return res.status(400).json({
       status: false,
-      message: messages.join(', ')
+      message: message
     });
   }
 

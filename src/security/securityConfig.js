@@ -159,9 +159,11 @@ const getSessionConfig = () => ({
 
 /**
  * Trusted proxy configuration
- * Important for rate limiting when behind reverse proxy
+ * Important for rate limiting when behind reverse proxy (Heroku, Render, Nginx, etc.)
  */
-const trustProxyConfig = process.env.TRUST_PROXY === 'true' ? 1 : false;
+const trustProxyConfig = process.env.TRUST_PROXY === 'true' || 
+                        process.env.NODE_ENV === 'production' || 
+                        process.env.RENDER === 'true' ? 1 : false;
 
 /**
  * Security headers middleware
